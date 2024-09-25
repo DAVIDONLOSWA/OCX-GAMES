@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCX Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #fff;
+            overflow: hidden;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        #player {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            background-color: #000;
+        }
+        .obstacle {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            height: 30px;
+            background-color: transparent;
+            color: red;
+            font-size: 12px;
+            text-align: center;
+        }
+        #startButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>OCX Game</h1>
+    <button id="startButton">Start Game</button>
+    <div id="gameContainer">
+        <div id="player"></div>
+    </div>
+
+    <script>
+        document.getElementById('startButton').addEventListener('click', function() {
+            const gameContainer = document.getElementById('gameContainer');
+            const player = document.getElementById('player');
+            let isJumping = false;
+            let gravity = 0.9;
+            let position = 0;
+
+            function jump() {
+                if (isJumping) return;
+                let count = 0;
+                isJumping = true;
+
+                let jumpInterval = setInterval(function() {
+                    if (count === 15) {
+                        clearInterval(jumpInterval);
+                        let downInterval = setInterval(function() {
+                            if (count === 0) {
+                                clearInterval(downInterval);
+                                isJumping = false;
+                            }
+                            position -= 5;
+                            count--;
+                            position = position * gravity;
+                            player.style.bottom = position + 'px';
+                        }, 20);
+                    }
+                    position += 30;
+                    count++;
+                    position = position * gravity;
+                    player.style.bottom = position + 'px';
+                }, 20);
+            }
+
+            function createObstacle() {
+                let obstacle = document.createElement('div');
+                obstacle.classList.add('obstacle');
+                obstacle.innerText = 'OCX';
+                obstacle.style.left = gameContainer.offsetWidth + 'px';
+                gameContainer.appendChild(obstacle);
+
+                let moveObstacle = setInterval(function() {
+                    let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+                    if (obstacleLeft < -30) {
+                        clearInterval(moveObstacle);
+                        gameContainer.removeChild(obstacle);
+                    } else {
+                        obstacle.style.left = obstacleLeft - 5 + 'px';
+                    }
+
+                    let playerBottom = parseInt(window.getComputedStyle(player).getPropertyValue('bottom'));
+                    if (obstacleLeft > 50 && obstacleLeft < 80 && playerBottom < 30) {
+                        alert('Game Over');
+                        clearInterval(moveObstacle);
+                        location.reload();
+                    }
+                }, 20);
+
+                setTimeout(createObstacle, Math.random() * 2000 + 1000);
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === ' ') {
+                    jump();
+                }
+            });
+
+            document.addEventListener('touchstart', function() {
+                jump();
+            });
+
+            createObstacle();
+        });
+    </script>
+</body>
+</html>
